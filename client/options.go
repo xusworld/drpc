@@ -1,6 +1,8 @@
 package client
 
-import "time"
+import (
+	"time"
+)
 
 const (
 	DefaultSerializationType = "protobuf"
@@ -9,28 +11,52 @@ const (
 	DefaultRecvBuffSize      = 1024
 )
 
+// Options rpc client options
 type Options struct {
-	// Server service
-	ServiceName string
+	// Service name
+	Service string
 
-	// Network
+	// Method name
+	Method string
+
+	// Network type
+	// Known networks are "tcp", "tcp4", "tcp6", "udp", "udp4", "udp6",
+	// "ip", "ip4", "ip6" and "unix"
 	Network string
 
 	// Server address to connect to
+	// For TCP and UDP networks, the address has the form "host:port". The port must be a
+	// literal port number or a service name.
+	// Dial("tcp", "golang.org:http")
+	// Dial("tcp", "192.0.2.1:http")
+	// Dial("tcp", "198.51.100.1:80")
+	// Dial("udp", "[2001:db8::1]:domain")
+	// Dial("udp", "[fe80::1%lo0]:53")
+	// Dial("tcp", ":80")
+	//
+	// For IP networks, the network must be "ip", "ip4" or "ip6" followed by a
+	// colon and a literal protocol number or a protocol name, and the address has the form "host".
+	// Dial("ip4:1", "192.0.2.1")
+	// Dial("ip6:ipv6-icmp", "2001:db8::1")
+	// Dial("ip6:58", "fe80::1%lo0")
 	Addr string
 
 	// Transport protocol
+	// default protocol is "flash"
 	Protocol string
 
 	// Serialization Type
-	// default serialization type is protobuf
+	// Support Json, Protobuf, MessagePack and Thrift
+	// default protocol is protobuf
 	SerializationType string
 
-	// Request timeout
-	// default request timeout is 42ms
+	// Maximum request time
+	// default request timeout is DefaultReqTimeout
 	Timeout time.Duration
 
-	// Is request should be compressed
+	concurrency int
+
+	// Request compress flag
 	// default NeedCompress is false which means not compress at all
 	NeedCompress bool
 
@@ -43,10 +69,17 @@ type Options struct {
 
 type OptionFunc func(options *Options)
 
-// ServiceName server service name
-func WithServiceName(name string) OptionFunc {
+// WithService server service name
+func WithService(name string) OptionFunc {
 	return func(options *Options) {
-		options.ServiceName = name
+		options.Service = name
+	}
+}
+
+// WithMethod server service name
+func WithMethod(name string) OptionFunc {
+	return func(options *Options) {
+		options.Method = name
 	}
 }
 

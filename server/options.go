@@ -4,7 +4,7 @@ import (
 	"time"
 )
 
-// Options server options
+// Options tcpServer options
 type Options struct {
 	Address           string
 	Network           string
@@ -38,14 +38,14 @@ func WithProtocol(protocol string) OptionFunc {
 	}
 }
 
-// WithReadTimeout RPC server read timeout
+// WithReadTimeout RPC tcpServer read timeout
 func WithReadTimeout(timeout time.Duration) OptionFunc {
 	return func(options *Options) {
 		options.ReadTimeout = timeout
 	}
 }
 
-// WithWriteTimeout RPC server write timeout
+// WithWriteTimeout RPC tcpServer write timeout
 func WithWriteTimeout(timeout time.Duration) OptionFunc {
 	return func(options *Options) {
 		options.WriteTimeout = timeout

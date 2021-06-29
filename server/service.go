@@ -2,110 +2,126 @@ package server
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"reflect"
 	"sync"
 
-	"github.com/xusworld/crpc/log"
-	"github.com/xusworld/crpc/util"
+	"github.com/xusworld/flash/config"
+	"github.com/xusworld/flash/util"
 )
 
-type Service struct {
-	name     string                 // name of service
-	receiver reflect.Value          // receiver of methods for the service
-	rtype    reflect.Type           // type of the receiver
-	method   map[string]*methodType // registered methods
+// Service interface
+type Service interface {
+	Register(interface{}) error
+
+	Call(name string, ctx context.Context, req, rsp interface{}) error
+
+	Unregister() error
 }
 
-type methodType struct {
-	method    reflect.Method
-	ArgType   reflect.Type
-	ReplyType reflect.Type
+const (
+	Running = iota
+	Stopped
+	Error
+)
+
+// defaultService impl
+type defaultService struct {
+	// defaultService name
+	name string
+
+	// pointer receiver
+	receiver reflect.Value
+
+	// reflect type
+	typ reflect.Type
+
+	// method map
+	methodMap map[string]reflect.Method
+
+	// defaultService status
+	status int
+
+	// mutex
+	mutex sync.Mutex
 }
 
-type functionType struct {
-	sync.Mutex // protects counters
-	fn         reflect.Value
-	ArgType    reflect.Type
-	ReplyType  reflect.Type
-}
+// Register
+// TODO not thread-safe
+func (s *defaultService) Register(receiver interface{}) error {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
 
-func (s *Server) RegisterService(receiver interface{}) {
-	_, err := s.doRegisterService(receiver)
+	s.receiver = reflect.ValueOf(receiver)
+	s.name = reflect.Indirect(s.receiver).Type().Name()
+	s.typ = reflect.TypeOf(receiver)
+	s.methodMap = make(map[string]reflect.Method, 0)
 
-	if err != nil {
-		log.Error("error")
+	for i := 0; i < s.typ.NumMethod(); i++ {
+		typ := s.typ
+		methodType := typ.Method(i).Type
+
+		// filter methodMap
+		if !util.IsParamNumEqualsToN(methodType, 4) {
+			fmt.Println("continue IsParamNumEqualsToN")
+			continue
+		}
+
+		// function checker
+		if !util.IsNthParamImplContext(methodType, 1) {
+			fmt.Println("continue IsNthParamImplContext")
+			continue
+		}
+
+		s.methodMap[typ.Method(i).Name] = typ.Method(i)
 	}
-}
 
-func (s *Server) doRegisterService(receiver interface{}) (string, error) {
-	service := Service{}
-	service.receiver = reflect.ValueOf(receiver)
-	service.rtype = reflect.TypeOf(receiver)
-	service.name = reflect.Indirect(service.receiver).Type().Name()
-	service.method = filterRecevierMethods(service.rtype)
-
-	return service.name, nil
-}
-
-func filterRecevierMethods(rtype reflect.Type) map[string]*methodType {
-	methods := make(map[string]*methodType, 0)
-
-	// 遍历receiver的所有方法
-	for i := 0; i < rtype.NumMethod(); i++ {
-		methodChecker := util.MethodChecker{
-			Method: rtype.Method(i),
-		}
-
-		if !methodChecker.IsParamNumEqualsToN(4) {
-			log.Error("")
-			continue
-		}
-
-		if !methodChecker.IsExportMethod() {
-			log.Error("")
-			continue
-		}
-
-		if !methodChecker.IsFirstParamImplContext() {
-			log.Error("")
-			continue
-		}
-
-		if !methodChecker.IsNthParamIsPtr(2) {
-			log.Error("")
-			continue
-		}
-
-		if !methodChecker.IsFirstReturnValImplError() {
-			log.Error("")
-			continue
-		}
-
-		methods[rtype.Method(i).Name] = &methodType{
-			method:    rtype.Method(i),
-			ArgType:   rtype.In(2),
-			ReplyType: rtype.In(3),
-		}
+	if len(s.methodMap) == 0 {
+		return errors.New(config.Project + ": register error")
 	}
-	return methods
+
+	s.status = Running
+	return nil
 }
 
-func (s *Server) UnregisterService() {
+// Call
+// TODO not thread-safe
+func (s *defaultService) Call(caller string, ctx context.Context, req, rsp interface{}) error {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
 
-}
+	fmt.Println("in")
+	if s.status != Running {
+		return errors.New(config.Project + ":defaultService is not registered yet")
+	}
 
-// call
-func (s *Service) call(ctx context.Context, mtype *methodType, argv, reply reflect.Value) (err error) {
-	// func with receiver as first argument
-	function := mtype.method.Func
-	// Invoke the method, providing a new value for the reply
-	returnValues := function.Call([]reflect.Value{s.receiver, reflect.ValueOf(ctx), argv, reply})
-	// The return value for the method is an error
-	errInter := returnValues[0].Interface()
+	function := s.methodMap[caller]
+	fmt.Println("Call")
+	output := function.Func.Call([]reflect.Value{s.receiver, reflect.ValueOf(ctx),
+		reflect.ValueOf(req), reflect.ValueOf(rsp)})
+
+	errInter := output[0].Interface()
 
 	if errInter != nil {
 		return errInter.(error)
 	}
 
+	return nil
+}
+
+// Unregister
+// TODO not thread-safe
+func (s *defaultService) Unregister() error {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+
+	if s.status == Running {
+		return errors.New(config.Project + ":defaultService is not registered yet")
+	}
+
+	s.methodMap = make(map[string]reflect.Method, 0)
+
+	s.status = Stopped
 	return nil
 }

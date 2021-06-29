@@ -5,41 +5,38 @@ import (
 	"reflect"
 )
 
-// MethodChecker
-type MethodChecker struct {
-	reflect.Method
+// IsParamNumEqualsToN
+func IsParamNumEqualsToN(typ reflect.Type, N int) bool {
+	return typ.NumIn() == N
 }
 
-func (mc *MethodChecker) IsExportMethod() bool {
-	return mc.PkgPath != ""
-}
-
-func (mc *MethodChecker) IsParamNumEqualsToN(n int) bool {
-	return mc.Type.NumIn() == n
-}
-
-func (mc *MethodChecker) IsFirstParamImplContext() bool {
+// IsNthParamImplContext
+func IsNthParamImplContext(typ reflect.Type, N int) bool {
 	// nil  is the zero value of reference types, simply conversion is OK
 	actualContextType := (*context.Context)(nil)
 	// context.Context is an interface not a reflect.Type, we need to convert it to  reflect.Type
 	contextType := reflect.TypeOf(actualContextType).Elem()
 	// get function's first input parameter
-	firstParam := mc.Type.In(0)
+	firstParam := typ.In(N)
 
 	return firstParam.Implements(contextType)
 }
 
-func (mc *MethodChecker) IsNthParamIsPtr(n int) bool {
-	return mc.Type.In(n).Kind() == reflect.Ptr
+// IsNthParamIsPtr
+func IsNthParamIsPtr(typ reflect.Type, N int) bool {
+	return typ.In(N).Kind() == reflect.Ptr
 }
 
-func (mc *MethodChecker) IsReturnNumsEqualsToN(n int) bool {
-	return mc.Type.NumOut() == n
+// IsReturnNumsEqualsToN
+func IsReturnNumEqualsToN(typ reflect.Type, N int) bool {
+	return typ.NumOut() == N
 }
-func (mc *MethodChecker) IsFirstReturnValImplError() bool {
+
+// IsFirstReturnValImplError
+func IsFirstReturnValImplError(typ reflect.Type) bool {
 	actualErrorType := (*error)(nil)
 	errorType := reflect.TypeOf(actualErrorType).Elem()
-	firstReturnVal := mc.Type.Out(0)
+	firstReturnVal := typ.Out(0)
 
 	return firstReturnVal.Implements(errorType)
 }

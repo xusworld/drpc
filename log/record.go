@@ -1,33 +1,46 @@
 package log
 
 import (
-	"github.com/spf13/cast"
+	"fmt"
+	"path/filepath"
+	"regexp"
+	"runtime"
+	"strconv"
+	"time"
 )
 
 const (
-	RecordDelimiter = "|"
+	timeFormat   = "2006-01-02 15:04:05"
+	headerFormat = "[%l]%F:%L|%T"
 )
 
-// Record defines logger format
-type Record struct {
-	Timestamp  string
-	LogLevel   int
-	FileName   string
-	LineNumber int
-	Caller     string
+// record
+func record(level Level, format string, args ...interface{}) string {
+	return formatHeader(level) + "|" + fmt.Sprintf(format, args...)
 }
 
-// RecordToString
-func RecordToString(record *Record) string {
-	message := cast.ToString(record.Timestamp) + RecordDelimiter
-	message += cast.ToString(loggerLevelToString(record.LogLevel)) + RecordDelimiter
-	message += cast.ToString(record.FileName) + RecordDelimiter
-	message += cast.ToString(record.LineNumber) + RecordDelimiter
-	message += cast.ToString(record.Caller) + RecordDelimiter
+// headerFormatFunc
+// ref https://github.com/ian-kent/go-log/blob/master/layout/pattern.go
+func formatHeader(level Level) string {
+	_, file, line, _ := runtime.Caller(3)
+	re := regexp.MustCompile("%(\\w|%)(?:{([^}]+)})?")
+
+	message := re.ReplaceAllStringFunc(headerFormat, func(m string) string {
+		parts := re.FindStringSubmatch(m)
+		switch parts[1] {
+		case "l":
+			return LevelToString(level)
+		case "F":
+			return filepath.Base(file)
+		case "L":
+			return strconv.Itoa(line)
+		case "T":
+			return time.Now().Format(timeFormat)
+		case "%":
+			return "%"
+		}
+		return m
+	})
+
 	return message
-}
-
-// RecordToBytes
-func RecordToBytes(record *Record) []byte {
-	return []byte(RecordToString(record))
 }

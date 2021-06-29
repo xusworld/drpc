@@ -1,62 +1,139 @@
 package client
 
 import (
+	"context"
+	"fmt"
 	"sync"
+
+	"github.com/xusworld/flash/codec"
+	"github.com/xusworld/flash/errors"
+	"github.com/xusworld/flash/log"
+	"github.com/xusworld/flash/transport"
 )
 
-// RPCClient RPC client interface
-type RPCClient interface {
-	Start()
+// Client RPC client interface
+type Client interface {
+	// check
+	Start() error
 
+	// Async call  server
+	Call(args interface{}, reply interface{}) error
+
+	// send one-way message to server, no need to get any reply from server
+	Send(args interface{}) error
+
+	// stop client and close all channels and network connection
 	Stop()
-
-	Call(request interface{}) (interface{}, error)
-
-	Send(request interface{}) error
 }
 
 // Client RPC client
-type Client struct {
+type client struct {
+	// rpc client options
 	options *Options
-	mutex   sync.RWMutex
+	// wait group
+	waitGroup sync.WaitGroup
+	//
+	ctx        context.Context
+	cancelFunc context.CancelFunc
+
+	// done signal
+	done chan struct{}
+	// stop signal
+	stop chan struct{}
+
+	mutex sync.RWMutex
 }
 
-func NewClient(optionFuncSet []OptionFunc) *Client {
+// NewClient create a rpc client
+func NewClient(optionFuncSet []OptionFunc) Client {
+	client := &client{
+		options: &Options{},
+	}
 
-	client := &Client{}
-
+	// function closures to set this client's all options
 	for _, optionFunc := range optionFuncSet {
 		optionFunc(client.options)
 	}
 
-	setDefaultIfNecessary(client.options)
+	// set this client's all default options
+	setDefaultOptions(client.options)
 
 	return client
 }
 
-// Start
-func (c *Client) Start() {
+func (c *client) Start() error {
+	if c.options.Timeout <= 0 {
+		log.Debugf("Client option timeout is %d, less than 0", c.options.Timeout)
+		return errors.ClientOptionError
+	}
 
-}
+	c.ctx, c.cancelFunc = context.WithTimeout(context.Background(), c.options.Timeout)
 
-// Stop
-func (c *Client) Stop() {
+	select {
+	case <-c.ctx.Done():
+		return errors.ClientContextTimeout
+	default:
+	}
 
-}
-
-// call
-func (c *Client) Call(request interface{}) (interface{}, error) {
-
-	return struct{}{}, nil
-}
-
-// Send
-func (c *Client) Send(request interface{}) error {
 	return nil
 }
 
-// setDefaultIfNecessary
-func setDefaultIfNecessary(options *Options) {
+// CallTimeout
+func (c *client) Call(args, reply interface{}) (err error) {
+	c.waitGroup.Add(1)
+	callChan := make(chan struct{})
+	go func() {
+		defer c.waitGroup.Done()
+		err = c.call(args, reply)
+		close(callChan)
+	}()
+	return err
+}
+
+// call
+func (c *client) call(args, reply interface{}) error {
+
+	// client codec
+	cc := NewClientCodec(c.options)
+	request, _ := cc.Encode(args)
+
+	// setting transport.Options
+	options := &transport.Options{
+		Network: c.options.Network,
+		Addr:    c.options.Addr,
+		Timeout: c.options.Timeout,
+	}
+
+	// call server and get reply from server
+	buff, err := transport.ClientTransport(c.ctx, request, options)
+	if err != nil {
+		fmt.Printf("flash: ClientTransport error %s", err)
+	}
+
+	// parse protocol header
+	response, err := cc.Decode(buff)
+	if err != nil {
+		log.Debug("client.Decode error %s", err)
+	}
+
+	serializer := codec.GetMarshaler(c.options.SerializationType)
+	err = serializer.Unmarshal(response.Payload, reply)
+
+	return err
+}
+
+// Send
+func (c *client) Send(args interface{}) error {
+	return nil
+}
+
+// Stop
+func (c *client) Stop() {
+	c.waitGroup.Wait()
+}
+
+// setDefaultOptions set default and necessary options
+func setDefaultOptions(options *Options) {
 	if options.SerializationType == "" {
 		options.SerializationType = DefaultSerializationType
 	}

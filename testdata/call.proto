@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package testdata;
+
+
+option go_package = "github.com/xusworld/flash/testdata";
+
+message Args {
+  int32 lhs = 1;
+  int32 rhs = 2;
+}
+
+message Reply {
+  int32 ret = 1;
+}

@@ -2,6 +2,8 @@ package util
 
 import "reflect"
 
+// Contains return is target in slice or not
+// TODO use type assertions to improve
 func Contains(slice interface{}, target interface{}) bool {
 	sliceVal := reflect.ValueOf(slice)
 	kind := sliceVal.Kind()

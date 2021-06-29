@@ -9,12 +9,16 @@ func TestNewServer(t *testing.T) {
 	optionFuncSet := []OptionFunc{
 		WithServerAddress("127.0.0.1:10086"),
 		WithServerNetwork("tcp"),
-		WithProtocol("crpc"),
+		WithProtocol("flash"),
 		WithReadTimeout(time.Millisecond),
 		WithWriteTimeout(time.Millisecond),
-		WithSerializationType("protobuf"),
+		WithSerializationType("Protobuf"),
 		WithKeepAlivePeriod(time.Millisecond),
 	}
-	server := NewServer(optionFuncSet)
-	server.Serve()
+	server := NewTcpServer(optionFuncSet)
+	service := &defaultService{}
+	_ = service.Register(new(Arith))
+	_ = server.Register(service)
+
+	_ = server.Serve()
 }

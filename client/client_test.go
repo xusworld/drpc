@@ -1,16 +1,34 @@
 package client
 
 import (
-	"net"
+	"context"
+	"fmt"
 	"testing"
+
+	"github.com/xusworld/flash/testdata"
 )
 
 func TestClient(t *testing.T) {
-	conn, err := net.Dial("tcp", "127.0.0.1:10086")
-	if err != nil {
-
+	optionFuncSet := []OptionFunc{
+		WithService("Arith"),
+		WithMethod("Mul"),
+		WithNetwork("tcp"),
+		WithAddr("127.0.0.1:10086"),
+		WithProtocol("flash"),
+		WithSerializationType("Protobuf"),
+		WithTimeout(DefaultReqTimeout),
+		WithSendBuffSize(DefaultSendBuffSize),
+		WithRecvBuffSize(DefaultRecvBuffSize),
 	}
+	c := NewClient(optionFuncSet)
 
-	conn.Write([]byte("HEAD / HTTP/1.0\r\n\r\n"))
+	reply := &testdata.Reply{}
 
+	_ = c.CallTimeout(context.Background(), &testdata.Args{
+		Lhs: 3,
+		Rhs: 4,
+	}, reply)
+
+	fmt.Println("The answer is ", reply.Ret)
+	c.Stop()
 }

@@ -1,0 +1,81 @@
+syntax = "proto3";
+
+package protocol;
+
+option go_package = "github.com/xusworld/flash/protocol";
+
+enum MessageType {
+  REQUEST = 0;
+  RESPONSE = 1;
+}
+
+enum CompressType {
+  GZIP = 0;
+  SNAPPY = 1;
+}
+
+enum SerializeType {
+  JSON = 0;
+  PB = 1;
+  THRIFT = 2;
+  MSGPACK = 3;
+}
+
+// Message header
+message Header {
+  // Magic number
+  int32 magic = 1;
+
+  // Request ID
+  int32 request_id = 2;
+
+  // Message priority
+  int32 priority = 3;
+
+  // Service
+  string service_path = 4;
+
+  // Method
+  string service_method = 5;
+
+  // Timeout
+  int64 timeout = 6;
+
+  // Message type
+  MessageType message_type = 10;
+
+  // Compress type
+  CompressType compress_type = 11;
+
+  // Serialize type
+  SerializeType serialize_type = 12;
+
+  // Status
+  map<string, string> status = 20;
+}
+
+// Request
+message Request {
+  // Request header
+  Header header = 1;
+
+  // Request payload
+  bytes  payload = 2;
+}
+
+// Response
+message Response {
+  // Response header
+  Header header = 1;
+
+  // Return code
+  uint32 ret_code = 2;
+
+  // Return message
+  string ret_msg = 3;
+
+  // Response payload
+  bytes payload = 4;
+}
+
+

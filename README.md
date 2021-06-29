@@ -1,5 +1,18 @@
-# crpc
+# flash
 Cool RPC project
+
+- client: 支持客户端发包模块
+- server: 支持服务端收包模块
+- transport: 提供底层通信能力模块
+- codec: 自定义协议的解析、序列化和反序列化模块
+- pool: 池技术、支持连接池、对象池等实现；提供客户端连接的复用，对象复用的能力
+- log:  提供日志能力模块
+- selector: 提供寻址能力、服务发现、负载均衡能力的模块
+- stream: 提供客户端和服务端上下文数据透传能力的模块
+- protocol: 提供自定义私有协议能力的模块
+- plugin: 提供第三方插件化支持能力
+- interceptor: 提供框架拦截器能力
+- metadata: 提供客户端和服务端参数传递能力
 
 ## TODO
 
