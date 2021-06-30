@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/xusworld/flash/testdata"
+	"github.com/xusworld/drpc/testdata"
 )
 
 type Arith int

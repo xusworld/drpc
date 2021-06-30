@@ -1,11 +1,10 @@
 package client
 
 import (
-	"context"
 	"fmt"
 	"testing"
 
-	"github.com/xusworld/flash/testdata"
+	"github.com/xusworld/drpc/testdata"
 )
 
 func TestClient(t *testing.T) {
@@ -14,7 +13,7 @@ func TestClient(t *testing.T) {
 		WithMethod("Mul"),
 		WithNetwork("tcp"),
 		WithAddr("127.0.0.1:10086"),
-		WithProtocol("flash"),
+		WithProtocol("drpc"),
 		WithSerializationType("Protobuf"),
 		WithTimeout(DefaultReqTimeout),
 		WithSendBuffSize(DefaultSendBuffSize),
@@ -24,7 +23,7 @@ func TestClient(t *testing.T) {
 
 	reply := &testdata.Reply{}
 
-	_ = c.CallTimeout(context.Background(), &testdata.Args{
+	_ = c.Call(&testdata.Args{
 		Lhs: 3,
 		Rhs: 4,
 	}, reply)

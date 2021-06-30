@@ -42,7 +42,7 @@ type Options struct {
 	Addr string
 
 	// Transport protocol
-	// default protocol is "flash"
+	// default protocol is "drpc"
 	Protocol string
 
 	// Serialization Type

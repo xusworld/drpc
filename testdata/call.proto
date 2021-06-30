@@ -3,7 +3,7 @@ syntax = "proto3";
 package testdata;
 
 
-option go_package = "github.com/xusworld/flash/testdata";
+option go_package = "github.com/xusworld/drpc/testdata";
 
 message Args {
   int32 lhs = 1;

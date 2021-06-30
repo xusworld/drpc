@@ -6,9 +6,9 @@ import (
 	"io/ioutil"
 	"net"
 
-	"github.com/xusworld/flash/config"
-	"github.com/xusworld/flash/errors"
-	"github.com/xusworld/flash/log"
+	"github.com/xusworld/drpc/config"
+	"github.com/xusworld/drpc/errors"
+	"github.com/xusworld/drpc/log"
 )
 
 // ClientTransport transport bytes stream from client to server
@@ -80,7 +80,7 @@ func tcpConnectHandler(ctx context.Context, conn net.Conn, buff []byte) (resp []
 		writeErr = Write(conn, buff)
 
 		if writeErr != nil {
-			log.Debug("flash: tcpTransport wirte error")
+			log.Debug("drpc: tcpTransport wirte error")
 		}
 	}()
 

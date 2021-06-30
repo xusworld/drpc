@@ -7,8 +7,8 @@ import (
 	"reflect"
 	"sync"
 
-	"github.com/xusworld/flash/config"
-	"github.com/xusworld/flash/util"
+	"github.com/xusworld/drpc/config"
+	"github.com/xusworld/drpc/util"
 )
 
 // Service interface

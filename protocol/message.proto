@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package protocol;
 
-option go_package = "github.com/xusworld/flash/protocol";
+option go_package = "github.com/xusworld/drpc/protocol";
 
 enum MessageType {
   REQUEST = 0;

@@ -11,7 +11,7 @@ func TestOptions(t *testing.T) {
 	optionFuncSet := []OptionFunc{
 		WithServerAddress("127.0.0.1:8080"),
 		WithServerNetwork("tcp"),
-		WithProtocol("flash"),
+		WithProtocol("drpc"),
 		WithReadTimeout(time.Millisecond),
 		WithWriteTimeout(time.Millisecond),
 		WithSerializationType("protobuf"),
@@ -25,7 +25,7 @@ func TestOptions(t *testing.T) {
 
 	assert.Equal(t, "127.0.0.1:8080", options.Address)
 	assert.Equal(t, "tcp", options.Network)
-	assert.Equal(t, "flash", options.Protocol)
+	assert.Equal(t, "drpc", options.Protocol)
 	assert.Equal(t, time.Millisecond, options.ReadTimeout)
 	assert.Equal(t, time.Millisecond, options.WriteTimeout)
 	assert.Equal(t, "protobuf", options.SerializationType)

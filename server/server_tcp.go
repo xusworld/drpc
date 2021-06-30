@@ -9,10 +9,10 @@ import (
 	"sync"
 
 	"github.com/golang/protobuf/proto"
-	"github.com/xusworld/flash/codec"
-	"github.com/xusworld/flash/config"
-	"github.com/xusworld/flash/log"
-	"github.com/xusworld/flash/protocol"
+	"github.com/xusworld/drpc/codec"
+	"github.com/xusworld/drpc/config"
+	"github.com/xusworld/drpc/log"
+	"github.com/xusworld/drpc/protocol"
 )
 
 // tcpServer
@@ -78,7 +78,7 @@ func (ts *tcpServer) serve() error {
 	for {
 		conn, err := ts.ln.Accept()
 		if err != nil {
-			fmt.Printf("flash: tcpServer linster error %s", err)
+			fmt.Printf("drpc: tcpServer linster error %s", err)
 			return err
 		}
 
@@ -86,7 +86,7 @@ func (ts *tcpServer) serve() error {
 			fmt.Println("connect accept. handle")
 			err := tcpHandleFunc(ts, conn)
 			if err != nil {
-				fmt.Printf("flash: tcpHandleFunc() error %s", err)
+				fmt.Printf("drpc: tcpHandleFunc() error %s", err)
 			}
 		}()
 	}

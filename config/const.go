@@ -1,5 +1,5 @@
 package config
 
 const (
-	Project = "flash"
+	Project = "drpc"
 )

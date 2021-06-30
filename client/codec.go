@@ -5,8 +5,8 @@ import (
 	"fmt"
 
 	"github.com/golang/protobuf/proto"
-	"github.com/xusworld/flash/codec"
-	"github.com/xusworld/flash/protocol"
+	"github.com/xusworld/drpc/codec"
+	"github.com/xusworld/drpc/protocol"
 )
 
 type clientCodec struct {

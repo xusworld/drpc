@@ -12,7 +12,7 @@ func TestOptions(t *testing.T) {
 		WithMethod("Call"),
 		WithNetwork("tcp"),
 		WithAddr("127.0.0.1:8080"),
-		WithProtocol("flash"),
+		WithProtocol("drpc"),
 		WithSerializationType(DefaultSerializationType),
 		WithTimeout(DefaultReqTimeout),
 		WithSendBuffSize(DefaultSendBuffSize),
@@ -29,7 +29,7 @@ func TestOptions(t *testing.T) {
 	assert.Equal(t, "Call", options.Method)
 	assert.Equal(t, "tcp", options.Network)
 	assert.Equal(t, "127.0.0.1:8080", options.Addr)
-	assert.Equal(t, "flash", options.Protocol)
+	assert.Equal(t, "drpc", options.Protocol)
 	assert.Equal(t, DefaultSerializationType, options.SerializationType)
 	assert.Equal(t, DefaultReqTimeout, options.Timeout)
 	assert.Equal(t, DefaultSendBuffSize, options.SendBuffSize)

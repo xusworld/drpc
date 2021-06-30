@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/xusworld/flash/codec"
-	"github.com/xusworld/flash/errors"
-	"github.com/xusworld/flash/log"
-	"github.com/xusworld/flash/transport"
+	"github.com/xusworld/drpc/codec"
+	"github.com/xusworld/drpc/errors"
+	"github.com/xusworld/drpc/log"
+	"github.com/xusworld/drpc/transport"
 )
 
 // Client RPC client interface
@@ -80,14 +80,8 @@ func (c *client) Start() error {
 
 // CallTimeout
 func (c *client) Call(args, reply interface{}) (err error) {
-	c.waitGroup.Add(1)
-	callChan := make(chan struct{})
-	go func() {
-		defer c.waitGroup.Done()
-		err = c.call(args, reply)
-		close(callChan)
-	}()
-	return err
+	c.ctx = context.Background()
+	return c.call(args, reply)
 }
 
 // call
@@ -107,7 +101,7 @@ func (c *client) call(args, reply interface{}) error {
 	// call server and get reply from server
 	buff, err := transport.ClientTransport(c.ctx, request, options)
 	if err != nil {
-		fmt.Printf("flash: ClientTransport error %s", err)
+		fmt.Printf("drpc: ClientTransport error %s", err)
 	}
 
 	// parse protocol header

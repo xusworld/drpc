@@ -1,4 +1,4 @@
-module github.com/xusworld/flash
+module github.com/xusworld/drpc
 
 go 1.15
 
