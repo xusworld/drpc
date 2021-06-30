@@ -22,6 +22,15 @@ Cool RPC project
 3. 客户端重复握手保护
 4. 消息缓存转发
 5. 心跳机制
+6. Client automatically manages connections and automatically reconnects to the server on connection errors.
+7. Client supports response timeouts.
+8. Client supports RPC batching.
+9. Client supports async requests' canceling.
+10. Client prioritizes new requests over old pending requests if server fails to handle the given load.
+11. Client detects stuck servers and immediately returns error to the caller.
+12. Client supports fast message passing to the Server, i.e. requests without responses.
+13. Both Client and Server provide network stats and RPC stats out of the box.
+
 
 ### 服务端
 1. 服务端超时
@@ -30,6 +39,13 @@ Cool RPC project
 4. 失败通知
 5. 失败缓存
 6. 快速失败
+7. Server provides graceful shutdown out of the box.
+8. Server supports RPC handlers' councurrency throttling out of the box.
+9. Server may pass client address to RPC handlers.
+10. Server gracefully handles panic in RPC handlers.
+11. Dispatcher accepts functions as RPC handlers.
+12. Dispatcher supports registering multiple receiver objects of the same type under distinct names.
+13. Dispatcher supports RPC handlers with zero, one (request) or two (client address and request) arguments and zero, one (either response or error) or two (response, error) return values.
 
 ### 负载均衡
 1. 随机
