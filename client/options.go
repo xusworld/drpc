@@ -54,7 +54,7 @@ type Options struct {
 	// default request timeout is DefaultReqTimeout
 	Timeout time.Duration
 
-	concurrency int
+	Concurrency int
 
 	// Request compress flag
 	// default NeedCompress is false which means not compress at all
@@ -136,5 +136,12 @@ func WithSendBuffSize(buffSize int) OptionFunc {
 func WithRecvBuffSize(buffSize int) OptionFunc {
 	return func(options *Options) {
 		options.RecvBuffSize = buffSize
+	}
+}
+
+// WithConcurrency
+func WithConcurrency(concurrency int) OptionFunc {
+	return func(options *Options) {
+		options.Concurrency = concurrency
 	}
 }

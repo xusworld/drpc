@@ -3,12 +3,11 @@ package client
 import (
 	"context"
 	"fmt"
-	"sync"
-
 	"github.com/xusworld/drpc/codec"
 	"github.com/xusworld/drpc/errors"
 	"github.com/xusworld/drpc/log"
 	"github.com/xusworld/drpc/transport"
+	"sync"
 )
 
 // Client RPC client interface
@@ -36,6 +35,8 @@ type client struct {
 	ctx        context.Context
 	cancelFunc context.CancelFunc
 
+	// call signal
+	requestCh chan struct{}
 	// done signal
 	done chan struct{}
 	// stop signal
@@ -58,6 +59,9 @@ func NewClient(optionFuncSet []OptionFunc) Client {
 	// set this client's all default options
 	setDefaultOptions(client.options)
 
+	// set channels
+	client.requestCh = make(chan struct{})
+
 	return client
 }
 
@@ -73,9 +77,32 @@ func (c *client) Start() error {
 	case <-c.ctx.Done():
 		return errors.ClientContextTimeout
 	default:
+		log.Debugf("%s", "Default")
+	}
+
+	for i := 0; i < c.options.Concurrency; i++ {
+		c.waitGroup.Add(1)
+		go clientHandler(c)
+
 	}
 
 	return nil
+}
+
+// clientHandler
+func clientHandler(c *client) {
+	defer c.waitGroup.Done()
+
+	log.Debugf("%s", "call clientHandler")
+
+	for {
+		select {
+		case c.requestCh <- struct{}{}:
+			log.Debugf("%s", "request channel receive message, ")
+			return
+		}
+	}
+
 }
 
 // CallTimeout
@@ -118,6 +145,9 @@ func (c *client) call(args, reply interface{}) error {
 
 // Send
 func (c *client) Send(args interface{}) error {
+	log.Debugf("%s", "Send")
+	//c.requestCh <- struct{}{}
+	_ = <-c.requestCh
 	return nil
 }
 

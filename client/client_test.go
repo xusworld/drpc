@@ -1,10 +1,7 @@
 package client
 
 import (
-	"fmt"
 	"testing"
-
-	"github.com/xusworld/drpc/testdata"
 )
 
 func TestClient(t *testing.T) {
@@ -18,11 +15,17 @@ func TestClient(t *testing.T) {
 		WithTimeout(DefaultReqTimeout),
 		WithSendBuffSize(DefaultSendBuffSize),
 		WithRecvBuffSize(DefaultRecvBuffSize),
+		WithConcurrency(3),
 	}
 	c := NewClient(optionFuncSet)
 
-	reply := &testdata.Reply{}
+	_ = c.Start()
+	_ = c.Send(nil)
+	_ = c.Send(nil)
+	_ = c.Send(nil)
 
+	/*
+	reply := &testdata.Reply{}
 	_ = c.Call(&testdata.Args{
 		Lhs: 3,
 		Rhs: 4,
@@ -30,4 +33,6 @@ func TestClient(t *testing.T) {
 
 	fmt.Println("The answer is ", reply.Ret)
 	c.Stop()
+	*/
+
 }
